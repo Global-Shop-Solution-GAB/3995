@@ -1,0 +1,89 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'Coded by Andretti Medina
+'Menu Path Order Entry - File - Open (or New)
+'Program Order Entry - put sort code on order entry screen
+'Hooks: 11560, 11565
+
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+
+V.Local.sCust.Declare(String)
+V.Local.sSQL.Declare(String)
+V.Local.sSort.Declare(String)
+
+'Populate hook,
+F.Intrinsic.Control.If(V.Caller.Hook,=,"11560")
+'Setting property of Sort textfield
+	F.Intrinsic.Variable.SetProperty("GAB-TEXT-2","PL","730")
+	F.Intrinsic.Variable.SetProperty("("GAB-TEXT-2","PT","86")
+	F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-2,"HIDE",0)
+	F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-TEXT-2,"LOCK",0)
+'Setting property of label field	
+	V.Passed.GAB-LBL-2.Set("Sort")
+	F.Intrinsic.Variable.SetProperty("GAB-LBL-2","PL","728")
+	F.Intrinsic.Variable.SetProperty("GAB-LBL-2","PT","68")
+	F.Intrinsic.Variable.SetProperty("GAB-LBL-2","PW","40")
+	F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-LBL-2,"HIDE",0)
+	F.Intrinsic.UI.ChangeCallerProperty(V.Passed.GAB-LBL-2,"LOCK",0)
+'if Customer field isn't blank, find the results of the query below
+	F.Intrinsic.Control.If(V.Passed.000006,<>,"")
+	V.Local.sCust.Set(V.Passed.000006)
+		F.Intrinsic.String.Concat("select C_SORT_1 from customer_sales where Rec = '2' and customer = '",V.Local.sCust,"'",V.Local.sSQL)
+		Function.ODBC.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+		F.ODBC.Connection!conx.OpenRecordsetRO("rst",V.Local.sSQL)
+		F.Intrinsic.Control.If(V.ODBC.conx!rst.EOF,<>,True)
+			V.Local.sSort.Set(V.ODBC.conx!rst.FieldValTrim!C_SORT_1)
+			V.Passed.GAB-TEXT-2.Set(V.Local.sSort)
+			F.ODBC.Connection!conx.Close
+		F.Intrinsic.Control.Else
+			F.ODBC.conx!rst.Close
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.ElseIf(V.Caller.Hook,=,11565)
+	V.Local.sCust.Set(V.Passed.000006)
+	F.Intrinsic.String.Concat("select C_SORT_1 from customer_sales where Rec = '2' and customer = '",V.Local.sCust,"'",V.Local.sSQL)
+	Function.ODBC.Connection!conx.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+	F.ODBC.Connection!conx.OpenRecordsetRO("rst",V.Local.sSQL)
+	F.Intrinsic.Control.If(V.ODBC.conx!rst.EOF,<>,True)
+		V.Local.sSort.Set(V.ODBC.conx!rst.FieldValTrim!C_SORT_1)
+		V.Passed.GAB-TEXT-2.Set(V.Local.sSort)
+		F.ODBC.Connection!conx.Close
+	F.Intrinsic.Control.Else
+		F.ODBC.conx!rst.Close
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.End
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3995_Customer_Sales_C_Sort.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.ODBC.Connection!conx.Close
+	F.Intrinsic.Control.End
+
+Function.Intrinsic.Control.EndIf
+
+
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$GCG_Customer_Sales_C_Sort$}$AGM$}$7/17/2014$}$False
+${$1$}$$}$$}$1$}$11565$}$OES0200A-ORDER-SELECTED-HOOK$}$5/11/2016 10:41:40 AM$}$(Program: ORD200; Screen: OES0200A)
+
+${$1$}$$}$$}$0$}$11560$}$OES0200A-POPULATE-HOOK$}$5/11/2016 10:41:24 AM$}$(Program: ORD200; Screen: OES0200A)
+
+Program.Sub.Comments.End
+
